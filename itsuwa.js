@@ -43,6 +43,14 @@ function itsuwa(obj) {
     var exampleMatch = funcString.match(exampleRegex);
     funcString = funcString.substr(exampleMatch[0].length);
     example = docTrim(exampleMatch[1]);
+    // returns
+    var returns = [];
+    var returnRegex = /(\/\*(?:(?!\*\/)(?:.|[\r\n]))*\*\/)\s*return/g;
+    var returnMatch = returnRegex.exec(funcString);
+    while (returnMatch) {
+        returns.push(docTrim(returnMatch[1]));
+        returnMatch = returnRegex.exec(funcString);
+    }
     // render
     var color = {
         'function': '#936',
@@ -67,6 +75,11 @@ function itsuwa(obj) {
             'font-weight: initial; color: #000;',
             parameter.description
         );
+    });
+    console.groupEnd();
+    console.group('returns');
+    returns.forEach(function (description) {
+        console.log(description);
     });
     console.groupEnd();
     console.group('example');
