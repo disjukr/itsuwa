@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>itsuwa - runtime document</title>
+</head>
+<body>
+    <script type="text/javascript" src="itsuwa.js"></script>
+    <script type="text/javascript">
+    function example(a /** this is first param */,
+                     b /** this is second */,
+                     c /** and this is last */)
+    /** this function does nothing */
+    {
+        /**
+         * // this is example
+         * test(a, b, c); // call the function like this
+         */
+        if (condition) {
+            /** return true in this condition */
+            return true;
+        } else {
+            /** return false */
+            return false;
+        }
+    }
+    itsuwa(example);
+    </script>
+</body>
+</html>
