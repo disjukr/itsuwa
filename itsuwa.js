@@ -5,7 +5,9 @@ function itsuwa(obj) {
         return;
     }
     function docTrim(comment) {
-        return comment.
+        if (!comment)
+            return '';
+        return (comment + '').
                replace(/^\/(\*\*|\*)/, '').
                replace(/\*\/$/, '').
                split(/\r?\n/).
@@ -27,6 +29,20 @@ function itsuwa(obj) {
             description: docTrim(paramMatch[2])
         });
     }
+    funcString = funcString.substr(1); // consume )
+    // description
+    var description;
+    var descRegex = /\s*(\/\*(?:(?!\*\/)(?:.|[\r\n]))*\*\/)?\s*/;
+    var descMatch = funcString.match(descRegex);
+    funcString = funcString.substr(descMatch[0].length);
+    description = docTrim(descMatch[1]);
+    funcString = funcString.substr(1); // consume {
+    // example
+    var example;
+    var exampleRegex = /\s*(\/\*(?:(?!\*\/)(?:.|[\r\n]))*\*\/)/;
+    var exampleMatch = funcString.match(exampleRegex);
+    funcString = funcString.substr(exampleMatch[0].length);
+    example = docTrim(exampleMatch[1]);
     // render
     var color = {
         'function': '#936',
@@ -40,6 +56,7 @@ function itsuwa(obj) {
         'font-size: 16px; color: #000',
         obj.name
     );
+    console.info(description);
     console.group('parameters');
     parameters.forEach(function (parameter) {
         console.log(
@@ -51,5 +68,9 @@ function itsuwa(obj) {
             parameter.description
         );
     });
+    console.groupEnd();
+    console.group('example');
+    console.log(example);
+    console.groupEnd();
     console.groupEnd();
 }
