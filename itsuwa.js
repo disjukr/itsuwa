@@ -1,3 +1,50 @@
+;(function () {
+    // window.itsuwa = itsuwa;
+    function itsuwa(obj) {
+        switch (typeof obj) {
+        case 'function':
+            printFunction(parseFunction(func));
+            break;
+        default:
+            break;
+        }
+    }
+    function parseFunction(func) {
+        // TODO
+    }
+    function printFunction(data) {
+        // TODO
+    }
+    function roughTokenize(code) {
+        var regex = new RegExp([
+            '0[0-9]+', '0[Xx][0-9A-Fa-f]+', '\\d*\\.?\\d+(?:[Ee](?:[+-]?\\d+)?)?',
+            '"(?:[^\\\\"]|\\\\.)*"|\'(?:[^\\\\\']|\\\\.)*\'',
+            '\/\/.*$',
+            '\\/\\*(?:[^*]|[\\r\\n]|(?:\\*+(?:[^*/]|[\\r\\n])))*\\*+\\/',
+            '\\/(?![\\s=])[^[\\/\\n\\\\]*(?:(?:\\\\[\\s\\S]|\\[[^\\]\\n\\\\]*(?:\\\\[\\s\\S][^\\]\\n\\\\]*)*])[^[\\/\\n\\\\]*)*\\/[gimy]{0,4}',
+            '[^\\b\\s`~!@#%^&*/\\-+=,.;:\'"<>()[\\]{}\\\\|0-9][^\\b\\s`~!@#%^&*/\\-+=,.;:"\'<>()[\\]{}\\|]*',
+            '\\+|\\-|=|\\*|/|~|%|\\^|&|\\(|\\)|\\[|\\]|\\{|\\}|\\\\|\\||<|>|,|\\.|\\?|!|:|;'
+        ].join('|'), 'g');
+        var list = [];
+        var token = regex.exec(code);
+        while (token) {
+            list.push(token);
+            token = regex.exec(code);
+        }
+        return list;
+    }
+    function docTrim(comment) {
+        if (!comment)
+            return '';
+        return (comment + '').
+               replace(/^\/(\*\*|\*)/, '').
+               replace(/\*\/$/, '').
+               split(/\r?\n/).
+               map(function (line) {
+            return line.replace(/^\s*\*/, '').trim();
+        }).join('\n').trim();
+    }
+})();
 function itsuwa(obj) {
     // 일단 함수인 경우만 가정
     if (typeof obj !== 'function') {
