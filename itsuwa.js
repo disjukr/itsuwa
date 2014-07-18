@@ -13,7 +13,34 @@
         // TODO
     }
     function printFunction(data) {
-        // TODO
+        console.group(
+            '%cfunction%c %s',
+            'font-size: 18px; color: #936',
+            'font-size: 16px; color: #000',
+            data.name
+        );
+        console.info(data.description);
+        console.group('parameters');
+        data.parameters.forEach(function (parameter) {
+            console.log(
+                '%c%s%c:%c %s',
+                'font-size: 14px; font-weight: bold;',
+                parameter.name,
+                'font-size: 8px;',
+                'font-weight: initial; color: #000;',
+                parameter.description
+            );
+        });
+        console.groupEnd();
+        console.group('returns');
+        data.returns.forEach(function (description) {
+            console.log(description);
+        });
+        console.groupEnd();
+        console.group('example');
+        console.log(data.example);
+        console.groupEnd();
+        console.groupEnd();
     }
     function roughTokenize(code) {
         var regex = new RegExp([
