@@ -1,16 +1,56 @@
 ;(function () {
-    // window.itsuwa = itsuwa;
+    window.itsuwa = itsuwa;
     function itsuwa(obj) {
         switch (typeof obj) {
         case 'function':
-            printFunction(parseFunction(func));
+            printFunction(parseFunction(obj));
             break;
         default:
             break;
         }
     }
     function parseFunction(func) {
-        // TODO
+        var data = {};
+        data.name = func.name;
+        data.description = '';
+        data.parameters = [];
+        data.returns = [];
+        data.example = '';
+        var tokens = roughTokenize(func + '');
+        while (tokens[0].content != '(')
+            tokens.shift();
+        tokens.shift(); // consume (
+        while (tokens[0].content != ')') {
+            var parameter = {};
+            parameter.name = tokens.shift().content;
+            parameter.description = (tokens[0].type == 'doc comment') ?
+                docTrim(tokens.shift().content) : '';
+            data.parameters.push(parameter);
+            while (tokens[0].content != ',' && tokens[0].content != ')')
+                tokens.shift();
+            if (tokens[0].content == ',')
+                tokens.shift();
+        }
+        tokens.shift(); // consume )
+        if (tokens[0].type == 'doc comment')
+            data.description = docTrim(tokens.shift().content);
+        while (tokens[0].content != '{')
+            tokens.shift();
+        tokens.shift(); // consume {
+        if (tokens[0].type == 'doc comment') {
+            if (!tokens[1] || tokens[1].content != 'return')
+                data.example = docTrim(tokens.shift().content);
+        }
+        while (tokens[0]) {
+            var returnDescription;
+            if (tokens[0].type == 'doc comment') {
+                returnDescription = docTrim(tokens.shift().content);
+                if (tokens[0] && tokens[0].content == 'return')
+                    data.returns.push(returnDescription);
+            }
+            tokens.shift();
+        }
+        return data;
     }
     function printFunction(data) {
         console.group(
@@ -19,27 +59,34 @@
             'font-size: 16px; color: #000',
             data.name
         );
-        console.info(data.description);
-        console.group('parameters');
-        data.parameters.forEach(function (parameter) {
-            console.log(
-                '%c%s%c:%c %s',
-                'font-size: 14px; font-weight: bold;',
-                parameter.name,
-                'font-size: 8px;',
-                'font-weight: initial; color: #000;',
-                parameter.description
-            );
-        });
-        console.groupEnd();
-        console.group('returns');
-        data.returns.forEach(function (description) {
-            console.log(description);
-        });
-        console.groupEnd();
-        console.group('example');
-        console.log(data.example);
-        console.groupEnd();
+        if (data.description.length)
+            console.info(data.description);
+        if (data.parameters.length) {
+            console.group('parameters');
+            data.parameters.forEach(function (parameter) {
+                console.log(
+                    '%c%s%c:%c %s',
+                    'font-size: 14px; font-weight: bold;',
+                    parameter.name,
+                    'font-size: 8px;',
+                    'font-weight: initial; color: #000;',
+                    parameter.description
+                );
+            });
+            console.groupEnd();
+        }
+        if (data.returns.length) {
+            console.group('returns');
+            data.returns.forEach(function (description) {
+                console.log(description);
+            });
+            console.groupEnd();
+        }
+        if (data.example.length) {
+            console.group('example');
+            console.log(data.example);
+            console.groupEnd();
+        }
         console.groupEnd();
     }
     function roughTokenize(code) {
@@ -54,8 +101,26 @@
         ].join('|'), 'g');
         var list = [];
         var token = regex.exec(code);
+        var tokenContent;
+        var tokenType;
         while (token) {
-            list.push(token);
+            tokenContent = token[0];
+            if (tokenContent.substr(0, 3) === '/**') {
+                tokenType = 'doc comment';
+            } else if (tokenContent.charAt(0) === '/') {
+                tokenType = 'comment';
+            } else if (/^[0-9]/.test(tokenContent)) {
+                tokenType = 'number';
+            } else if (/^("|')/.test(tokenContent)) {
+                tokenType = 'string';
+            } else {
+                tokenType = 'other';
+            }
+            list.push({
+                content: tokenContent,
+                type: tokenType,
+                index: token.index
+            });
             token = regex.exec(code);
         }
         return list;
@@ -72,92 +137,3 @@
         }).join('\n').trim();
     }
 })();
-function itsuwa(obj) {
-    // 일단 함수인 경우만 가정
-    if (typeof obj !== 'function') {
-        console.warn('this is not a function');
-        return;
-    }
-    function docTrim(comment) {
-        if (!comment)
-            return '';
-        return (comment + '').
-               replace(/^\/(\*\*|\*)/, '').
-               replace(/\*\/$/, '').
-               split(/\r?\n/).
-               map(function (line) {
-            return line.replace(/^\s*\*/, '').trim();
-        }).join('\n').trim();
-    }
-    var funcString = (obj + '').substr(
-        ('function ' + obj.name + '(').length
-    );
-    // parameters
-    var parameters = [];
-    while (funcString.charAt() !== ')') {
-        var paramRegex = /([^\/,)]+)\s*(\/\*(?:(?!\*\/)(?:.|[\r\n]))*\*\/)?\s*,?/;
-        var paramMatch = funcString.match(paramRegex);
-        funcString = funcString.substr(paramMatch[0].length);
-        parameters.push({
-            name: paramMatch[1].trim(),
-            description: docTrim(paramMatch[2])
-        });
-    }
-    funcString = funcString.substr(1); // consume )
-    // description
-    var description;
-    var descRegex = /\s*(\/\*(?:(?!\*\/)(?:.|[\r\n]))*\*\/)?\s*/;
-    var descMatch = funcString.match(descRegex);
-    funcString = funcString.substr(descMatch[0].length);
-    description = docTrim(descMatch[1]);
-    funcString = funcString.substr(1); // consume {
-    // example
-    var example;
-    var exampleRegex = /\s*(\/\*(?:(?!\*\/)(?:.|[\r\n]))*\*\/)/;
-    var exampleMatch = funcString.match(exampleRegex);
-    funcString = funcString.substr(exampleMatch[0].length);
-    example = docTrim(exampleMatch[1]);
-    // returns
-    var returns = [];
-    var returnRegex = /(\/\*(?:(?!\*\/)(?:.|[\r\n]))*\*\/)\s*return/g;
-    var returnMatch = returnRegex.exec(funcString);
-    while (returnMatch) {
-        returns.push(docTrim(returnMatch[1]));
-        returnMatch = returnRegex.exec(funcString);
-    }
-    // render
-    var color = {
-        'function': '#936',
-        'number': '#369',
-        'string': '#396',
-        'object': '#963'
-    };
-    console.group(
-        '%cfunction%c %s',
-        'font-size: 18px; color:' + color['function'],
-        'font-size: 16px; color: #000',
-        obj.name
-    );
-    console.info(description);
-    console.group('parameters');
-    parameters.forEach(function (parameter) {
-        console.log(
-            '%c%s%c:%c %s',
-            'font-size: 14px; font-weight: bold;',
-            parameter.name,
-            'font-size: 8px;',
-            'font-weight: initial; color: #000;',
-            parameter.description
-        );
-    });
-    console.groupEnd();
-    console.group('returns');
-    returns.forEach(function (description) {
-        console.log(description);
-    });
-    console.groupEnd();
-    console.group('example');
-    console.log(example);
-    console.groupEnd();
-    console.groupEnd();
-}
