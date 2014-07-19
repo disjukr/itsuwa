@@ -19,7 +19,6 @@
          *     itsuwa.amakusaStyle(itsuwa.amakusaStyle.toString())
          * );
          */
-        true, false;
         var format = [];
         var formatString = [];
         var tokens = roughTokenize(code);

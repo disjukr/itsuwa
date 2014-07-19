@@ -5,6 +5,9 @@ runtime document
 ## how to use
 ![itsuwa sample](sample.png)
 
+## syntax highlight
+![amakusa style sample](syntax_highlight_sample.png)
+
 ## license
 The MIT License (MIT)
 
