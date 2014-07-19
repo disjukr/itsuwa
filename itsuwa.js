@@ -9,6 +9,38 @@
             break;
         }
     }
+    itsuwa.amakusaStyle = amakusaStyle;
+    function amakusaStyle(code /** code string to highlight */)
+    /** return highlighted input code array for render to console */
+    {
+        /**
+         * console.log.apply(
+         *     console,
+         *     itsuwa.amakusaStyle(itsuwa.amakusaStyle.toString())
+         * );
+         */
+        true, false;
+        var format = [];
+        var formatString = [];
+        var tokens = roughTokenize(code);
+        while (tokens.length) {
+            var token = tokens.shift();
+            formatString.push('%c');
+            format.push('color:' + (color[token.type] || color['other']));
+            if (token.content == '%') {
+                formatString.push('%s');
+                format.push('%');
+            } else {
+                var shim = token.content.split('%');
+                for (var i = 0, l = shim.length - 1; i < l; ++i)
+                    format.push('%');
+                formatString.push(shim.join('%s'));
+            }
+        }
+        format.unshift(formatString.join(''));
+        /** highlighted input code array for render to console */
+        return format;
+    }
     function parseFunction(func) {
         var data = {};
         data.name = func.name;
@@ -16,14 +48,16 @@
         data.parameters = [];
         data.returns = [];
         data.example = '';
-        var tokens = roughTokenize(func + '');
+        var tokens = roughTokenize(func + '').filter(function (token) {
+            return token.type != 'space';
+        });
         while (tokens[0].content != '(')
             tokens.shift();
         tokens.shift(); // consume (
         while (tokens[0].content != ')') {
             var parameter = {};
             parameter.name = tokens.shift().content;
-            parameter.description = (tokens[0].type == 'doc comment') ?
+            parameter.description = (tokens[0].type == 'doc') ?
                 docTrim(tokens.shift().content) : '';
             data.parameters.push(parameter);
             while (tokens[0].content != ',' && tokens[0].content != ')')
@@ -32,20 +66,20 @@
                 tokens.shift();
         }
         tokens.shift(); // consume )
-        if (tokens[0].type == 'doc comment')
+        if (tokens[0].type == 'doc')
             data.description = docTrim(tokens.shift().content);
         while (tokens[0].content != '{')
             tokens.shift();
         tokens.shift(); // consume {
-        if (tokens[0].type == 'doc comment') {
+        if (tokens[0].type == 'doc') {
             if (!tokens[1] || tokens[1].content != 'return')
                 data.example = docTrim(tokens.shift().content);
         }
-        while (tokens[0]) {
+        while (tokens.length) {
             var returnDescription;
-            if (tokens[0].type == 'doc comment') {
+            if (tokens[0].type == 'doc') {
                 returnDescription = docTrim(tokens.shift().content);
-                if (tokens[0] && tokens[0].content == 'return')
+                if (tokens.length && tokens[0].content == 'return')
                     data.returns.push(returnDescription);
             }
             tokens.shift();
@@ -55,7 +89,7 @@
     function printFunction(data) {
         console.group(
             '%cfunction%c %s',
-            'font-size: 18px; color: #936',
+            'font-size: 18px; color: ' + color['function'],
             'font-size: 16px; color: #000',
             data.name
         );
@@ -84,7 +118,7 @@
         }
         if (data.example.length) {
             console.group('example');
-            console.log(data.example);
+            console.log.apply(console, amakusaStyle(data.example));
             console.groupEnd();
         }
         console.groupEnd();
@@ -93,11 +127,11 @@
         var regex = new RegExp([
             '0[0-9]+', '0[Xx][0-9A-Fa-f]+', '\\d*\\.?\\d+(?:[Ee](?:[+-]?\\d+)?)?',
             '"(?:[^\\\\"]|\\\\.)*"|\'(?:[^\\\\\']|\\\\.)*\'',
-            '\/\/.*$',
+            '\/\/.+',
             '\\/\\*(?:[^*]|[\\r\\n]|(?:\\*+(?:[^*/]|[\\r\\n])))*\\*+\\/',
             '\\/(?![\\s=])[^[\\/\\n\\\\]*(?:(?:\\\\[\\s\\S]|\\[[^\\]\\n\\\\]*(?:\\\\[\\s\\S][^\\]\\n\\\\]*)*])[^[\\/\\n\\\\]*)*\\/[gimy]{0,4}',
             '[^\\b\\s`~!@#%^&*/\\-+=,.;:\'"<>()[\\]{}\\\\|0-9][^\\b\\s`~!@#%^&*/\\-+=,.;:"\'<>()[\\]{}\\|]*',
-            '\\+|\\-|=|\\*|/|~|%|\\^|&|\\(|\\)|\\[|\\]|\\{|\\}|\\\\|\\||<|>|,|\\.|\\?|!|:|;'
+            '\\s+', '.'
         ].join('|'), 'g');
         var list = [];
         var token = regex.exec(code);
@@ -105,8 +139,10 @@
         var tokenType;
         while (token) {
             tokenContent = token[0];
-            if (/\/\*\*[^\/]/.test(tokenContent.substr(0, 4))) {
-                tokenType = 'doc comment';
+            if (/^\s+$/.test(tokenContent)) {
+                tokenType = 'space';
+            } else if (/\/\*\*[^\/]/.test(tokenContent.substr(0, 4))) {
+                tokenType = 'doc';
             } else if (tokenContent[0] == '/') {
                 tokenType = (tokenContent[1] == '/' || tokenContent[1] == '*') ?
                     'comment' : 'regex';
@@ -114,6 +150,26 @@
                 tokenType = 'number';
             } else if (/^("|')/.test(tokenContent)) {
                 tokenType = 'string';
+            } else if (tokenContent == 'function') {
+                tokenType = 'function';
+            } else if (['true', 'false'].indexOf(tokenContent) >= 0) {
+                tokenType = 'boolean';
+            } else if ([
+                'break', 'case', 'class', 'catch', 'const',
+                'continue', 'debugger', 'default', 'delete', 'do',
+                'else', 'export', 'extends', 'finally', 'for',
+                'function', 'if', 'import', 'in', 'instanceof',
+                'let', 'new', 'return', 'super', 'switch',
+                'this', 'throw', 'try', 'typeof', 'var',
+                'void', 'while', 'with', 'yield'
+            ].indexOf(tokenContent) >= 0) {
+                tokenType = 'keyword';
+            } else if ([
+                '+', '-', '*', '/', '%',
+                '!', '~', '^', '|', '&',
+                '<', '>', '=', '?', ':'
+            ].indexOf(tokenContent) >= 0) {
+                tokenType = 'operator';
             } else {
                 tokenType = 'other';
             }
@@ -134,7 +190,19 @@
                replace(/\*\/$/, '').
                split(/\r?\n/).
                map(function (line) {
-            return line.replace(/^\s*\*/, '').trim();
+            line = line.replace(/^\s*\*/, '');
+            return line.replace(/^\s|\s+$/g, '');
         }).join('\n').trim();
     }
+    var color = {
+        'doc': '#d0c',
+        'comment': '#999',
+        'function': '#936',
+        'string': '#e93',
+        'number': '#36f',
+        'boolean': '#93d',
+        'keyword': '#f36',
+        'operator': '#3b9',
+        'other': '#000'
+    };
 })();
