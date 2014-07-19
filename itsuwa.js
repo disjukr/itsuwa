@@ -105,10 +105,11 @@
         var tokenType;
         while (token) {
             tokenContent = token[0];
-            if (tokenContent.substr(0, 3) === '/**') {
+            if (/\/\*\*[^\/]/.test(tokenContent.substr(0, 4))) {
                 tokenType = 'doc comment';
-            } else if (tokenContent.charAt(0) === '/') {
-                tokenType = 'comment';
+            } else if (tokenContent[0] == '/') {
+                tokenType = (tokenContent[1] == '/' || tokenContent[1] == '*') ?
+                    'comment' : 'regex';
             } else if (/^[0-9]/.test(tokenContent)) {
                 tokenType = 'number';
             } else if (/^("|')/.test(tokenContent)) {
