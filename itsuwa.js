@@ -2,6 +2,21 @@
     window.itsuwa = itsuwa;
     function itsuwa(obj) {
         switch (typeof obj) {
+        case 'object':
+            if (obj instanceof Number ? !printNumber(obj) :
+                obj instanceof String ? !printString(obj) :
+                obj instanceof Boolean ? !printBoolean(obj) : false
+            ) return;
+            break;
+        case 'number':
+            printNumber(obj);
+            break;
+        case 'string':
+            printString(obj);
+            break;
+        case 'boolean':
+            printBoolean(obj);
+            break;
         case 'function':
             printFunction(parseFunction(obj));
             break;
@@ -121,6 +136,30 @@
             console.groupEnd();
         }
         console.groupEnd();
+    }
+    function printNumber(data) {
+        console.log(
+            '%cnumber%c %s',
+            'font-size: 18px; color: ' + color['number'],
+            'font-size: 16px; color: #000',
+            data + ''
+        );
+    }
+    function printString(data) {
+        console.log(
+            '%cstring%c %s',
+            'font-size: 18px; color: ' + color['string'],
+            'font-size: 16px; color: #000',
+            data + ''
+        );
+    }
+    function printBoolean(data) {
+        console.log(
+            '%cboolean%c %s',
+            'font-size: 18px; color: ' + color['boolean'],
+            'font-size: 16px; color: #000',
+            data + ''
+        );
     }
     function roughTokenize(code) {
         var regex = new RegExp([
