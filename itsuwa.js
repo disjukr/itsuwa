@@ -19,7 +19,7 @@
             printBoolean(obj);
             break;
         case 'function':
-            if (Object.keys(obj.prototype).length)
+            if (obj.prototype && Object.keys(obj.prototype).length)
                 printClass(obj);
             else
                 printFunction(obj);
