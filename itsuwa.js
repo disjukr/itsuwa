@@ -7,6 +7,7 @@
                 obj instanceof String ? !printString(obj) :
                 obj instanceof Boolean ? !printBoolean(obj) : false
             ) return;
+            printObject(obj);
             break;
         case 'number':
             printNumber(obj);
@@ -191,6 +192,27 @@
                 console.group.apply(
                     console,
                     amakusaStyle(data.name + '.' + field)
+                );
+                itsuwa(value[field]);
+                console.groupEnd();
+            });
+            console.groupEnd();
+        }
+        console.groupEnd();
+    }
+    function printObject(value) {
+        console.groupCollapsed(
+            'instance of %c%s',
+            'font-weight: initial; font-size: 16px; color: ' + color['object'],
+            value.constructor.name
+        );
+        var memberFields = Object.keys(value);
+        if (memberFields.length) {
+            console.group('members');
+            memberFields.forEach(function (field) {
+                console.group.apply(
+                    console,
+                    amakusaStyle('.' + field)
                 );
                 itsuwa(value[field]);
                 console.groupEnd();
