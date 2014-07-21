@@ -40,7 +40,7 @@
     }
     Class.prototype.func = function ()/** instance method */ {
         /**
-         * var instance = new Class(0,'',false);
+         * var instance = new Class(0, '', false);
          * instance.func();
          */
          /** nothing */ return;
@@ -48,13 +48,10 @@
     Class.prototype.num = 123.456;
     Class.prototype.str = 'Hello, World!';
     Class.prototype.bool = true;
-    Class.foo = 0;
+    Class.foo = {a: 'b'};
     Class.bar = [0, '', false];
-    Class.baz = new Class;
+    Class.baz = new Class(0xABCDEF, 'JongChan Choi', true);
     itsuwa(Class);
-
-    // instance
-    itsuwa(new Class);
     </script>
 </body>
 </html>

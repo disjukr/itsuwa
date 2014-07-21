@@ -107,8 +107,8 @@
         var data = parseFunction(value);
         console.group(
             '%cfunction%c %s',
-            'font-size: 18px; color: ' + color['function'],
-            'font-size: 16px; color: #000',
+            'font-weight: initial; font-size: 16px; color: ' + color['function'],
+            'line-height: 30px; font-weight: initial; font-size: 20px; color: #000',
             data.name
         );
         if (data.description.length)
@@ -145,8 +145,8 @@
         var data = parseFunction(value);
         console.group(
             '%cclass%c %s',
-            'font-size: 18px; color: ' + color['class'],
-            'font-size: 16px; color: #000',
+            'font-weight: initial; font-size: 16px; color: ' + color['class'],
+            'line-height: 50px; font-weight: initial; font-size: 20px; color: #000',
             data.name
         );
         if (data.description.length)
@@ -202,24 +202,24 @@
     function printNumber(value) {
         console.log(
             '%cnumber%c %s',
-            'font-size: 18px; color: ' + color['number'],
-            'font-size: 16px; color: #000',
+            'font-size: 16px; color: ' + color['number'],
+            'font-size: 14px; color: #000',
             value + ''
         );
     }
     function printString(value) {
         console.log(
             '%cstring%c %s',
-            'font-size: 18px; color: ' + color['string'],
-            'font-size: 16px; color: #000',
+            'font-size: 16px; color: ' + color['string'],
+            'font-size: 14px; color: #000',
             value + ''
         );
     }
     function printBoolean(value) {
         console.log(
             '%cboolean%c %s',
-            'font-size: 18px; color: ' + color['boolean'],
-            'font-size: 16px; color: #000',
+            'font-size: 16px; color: ' + color['boolean'],
+            'font-size: 14px; color: #000',
             value + ''
         );
     }
@@ -299,6 +299,7 @@
         'comment': '#999',
         'function': '#936',
         'class': '#096',
+        'object': '#666',
         'string': '#e93',
         'number': '#36f',
         'boolean': '#93d',
