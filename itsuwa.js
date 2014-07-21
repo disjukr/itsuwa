@@ -184,6 +184,20 @@
             console.groupEnd();
         }
         console.groupEnd();
+        var staticMemberFields = Object.keys(value);
+        if (staticMemberFields.length) {
+            console.group('static members');
+            staticMemberFields.forEach(function (field) {
+                console.group.apply(
+                    console,
+                    amakusaStyle(data.name + '.' + field)
+                );
+                itsuwa(value[field]);
+                console.groupEnd();
+            });
+            console.groupEnd();
+        }
+        console.groupEnd();
     }
     function printNumber(value) {
         console.log(
