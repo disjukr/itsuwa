@@ -6,6 +6,8 @@
 <body>
     <script type="text/javascript" src="itsuwa.js"></script>
     <script type="text/javascript">
+
+    // function
     function example(a /** this is first param */,
                      b /** this is second */,
                      c /** and this is last */)
@@ -24,6 +26,32 @@
         }
     }
     itsuwa(example);
+
+    // class
+    function Class(a /** number */,
+                   b /** string */,
+                   c /** boolean */)
+    /** this is class */
+    {
+        /** var instance = new Class(0xABCDEF, 'JongChan Choi', true); */
+        this.num = a;
+        this.str = b;
+        this.bool = c;
+    }
+    Class.prototype.func = function ()/** instance method */ {
+        /**
+         * var instance = new Class(0,'',false);
+         * instance.func();
+         */
+         /** nothing */ return;
+    };
+    Class.prototype.num = 123.456;
+    Class.prototype.str = 'Hello, World!';
+    Class.prototype.bool = true;
+    itsuwa(Class);
+
+    // instance
+    itsuwa(new Class);
     </script>
 </body>
 </html>

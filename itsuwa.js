@@ -18,7 +18,10 @@
             printBoolean(obj);
             break;
         case 'function':
-            printFunction(parseFunction(obj));
+            if (Object.keys(obj.prototype).length)
+                printClass(obj);
+            else
+                printFunction(obj);
             break;
         default:
             break;
@@ -100,7 +103,8 @@
         }
         return data;
     }
-    function printFunction(data) {
+    function printFunction(value) {
+        var data = parseFunction(value);
         console.group(
             '%cfunction%c %s',
             'font-size: 18px; color: ' + color['function'],
@@ -137,28 +141,72 @@
         }
         console.groupEnd();
     }
-    function printNumber(data) {
+    function printClass(value) {
+        var data = parseFunction(value);
+        console.group(
+            '%cclass%c %s',
+            'font-size: 18px; color: ' + color['class'],
+            'font-size: 16px; color: #000',
+            data.name
+        );
+        if (data.description.length)
+            console.info(data.description);
+        if (data.parameters.length) {
+            console.group('parameters');
+            data.parameters.forEach(function (parameter) {
+                console.log(
+                    '%c%s%c:%c %s',
+                    'font-size: 14px; font-weight: bold;',
+                    parameter.name,
+                    'font-size: 8px;',
+                    'font-weight: initial; color: #000;',
+                    parameter.description
+                );
+            });
+            console.groupEnd();
+        }
+        if (data.example.length) {
+            console.group('example');
+            console.log.apply(console, amakusaStyle(data.example));
+            console.groupEnd();
+        }
+        var memberFields = Object.keys(value.prototype);
+        if (memberFields.length) {
+            console.group('members');
+            memberFields.forEach(function (field) {
+                console.group.apply(
+                    console,
+                    amakusaStyle('(new ' + data.name + ').' + field)
+                );
+                itsuwa(value.prototype[field]);
+                console.groupEnd();
+            });
+            console.groupEnd();
+        }
+        console.groupEnd();
+    }
+    function printNumber(value) {
         console.log(
             '%cnumber%c %s',
             'font-size: 18px; color: ' + color['number'],
             'font-size: 16px; color: #000',
-            data + ''
+            value + ''
         );
     }
-    function printString(data) {
+    function printString(value) {
         console.log(
             '%cstring%c %s',
             'font-size: 18px; color: ' + color['string'],
             'font-size: 16px; color: #000',
-            data + ''
+            value + ''
         );
     }
-    function printBoolean(data) {
+    function printBoolean(value) {
         console.log(
             '%cboolean%c %s',
             'font-size: 18px; color: ' + color['boolean'],
             'font-size: 16px; color: #000',
-            data + ''
+            value + ''
         );
     }
     function roughTokenize(code) {
@@ -236,6 +284,7 @@
         'doc': '#d0c',
         'comment': '#999',
         'function': '#936',
+        'class': '#096',
         'string': '#e93',
         'number': '#36f',
         'boolean': '#93d',
